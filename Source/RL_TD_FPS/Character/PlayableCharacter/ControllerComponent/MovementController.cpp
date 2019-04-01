@@ -12,13 +12,15 @@ UMovementController::UMovementController()
 	/*PrimaryComponentTick.bCanEverTick = true;
 	PrimaryComponentTick.bStartWithTickEnabled = true;*/
 	m_MovementSettings = F_MovementSettings();
-	m_MovementSettings.m_JumpAbilities.Add(E_JumpABilities::VE_DoubleJump);
+	m_MovementSettings.b_EnableCameraFollowRotation = false;
+	m_MovementSettings.m_NumberJumpCanBeDone = 2;
 	b_DisableMovement = false;
 	b_DisableRotation = false;
 	m_RightRotationValue = 0;
 	m_ForwardSpeedInput = 0;
 	m_RightSpeedInput = 0;
-	b_CanDoubleJump = true;
+	m_CurrentJumpDone = 0;
+	b_JumpStart = false;
 	// ...
 }
 
@@ -29,16 +31,24 @@ void UMovementController::BeginPlay()
 	Super::BeginPlay();
 }
 
+void UMovementController::PostInitProperties()
+{
+	Super::PostInitProperties();
+}
+
 void UMovementController::UpdateMovementController(float DeltaTime)
 {
-	UE_LOG(LogTemp, Warning, TEXT("TickComponent"));
-	if (!b_CanDoubleJump)
+	if (b_JumpStart)
 	{
-		if (ABasicCharacter * l_Pawn = GetCharacterPawn())
+		b_JumpStart = false;
+	}
+	else if (m_CurrentJumpDone > 0)
+	{
+		if (ABasicCharacter * l_CharacterPlayer = GetCharacterPawn())
 		{
-			if (!l_Pawn->GetCharacterMovement()->IsFalling())
+			if (!l_CharacterPlayer->GetCharacterMovement()->IsFalling())
 			{
-				b_CanDoubleJump = true;
+				m_CurrentJumpDone = 0;
 			}
 		}
 	}
@@ -127,7 +137,35 @@ void UMovementController::LookRight(float p_Value)
 
 void UMovementController::OnJumpInputPressed()
 {
+	
 	ABasicCharacter* l_CharacterPlayer = GetCharacterPawn();
+	if (!l_CharacterPlayer->GetCharacterMovement()->IsFalling())
+	{
+		if (m_MovementSettings.m_NumberJumpCanBeDone >= 1)
+		{
+			l_CharacterPlayer->bPressedJump = true;
+			m_CurrentJumpDone = 1;
+			b_JumpStart = true;
+		}
+
+	}
+	else
+	{
+		if (m_CurrentJumpDone < m_MovementSettings.m_NumberJumpCanBeDone)
+		{
+			m_CurrentJumpDone++;
+			FVector l_LaunchVector;
+			l_LaunchVector.X = m_ForwardSpeedInput;
+			l_LaunchVector.Y = m_RightSpeedInput;
+			l_LaunchVector.Z = 1;
+			FRotator l_CharacterRotation = FRotator(0, l_CharacterPlayer->GetControlRotation().Yaw, 0);
+			l_LaunchVector = l_CharacterRotation.RotateVector(l_LaunchVector);
+			l_LaunchVector.Normalize();
+			l_LaunchVector *= m_MovementSettings.m_DoubleJumpVelocity;
+			l_CharacterPlayer->LaunchCharacter(l_LaunchVector, true, true);
+		}
+	}
+	/*
 	if (!l_CharacterPlayer->GetCharacterMovement()->IsFalling())
 	{
 		if (m_MovementSettings.m_JumpAbilities.Contains(E_JumpABilities::VE_BasicJump))
@@ -153,8 +191,7 @@ void UMovementController::OnJumpInputPressed()
 				b_CanDoubleJump = false;
 			}
 		}
-	}
-	
+	}*/
 }
 
 void UMovementController::OnJumpInputReleased()

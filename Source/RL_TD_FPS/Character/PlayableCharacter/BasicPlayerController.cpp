@@ -1,12 +1,12 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "BasicPlayerController.h"
+#include "Weapon/MechanicWeapon.h"
 
 ABasicPlayerController::ABasicPlayerController()
 {
 	SetActorTickEnabled(true);
 	m_MovementController = CreateDefaultSubobject<UMovementController>(TEXT("Movement controller"));
-	m_MovementController->RegisterComponent();
 
 	
 	
@@ -18,18 +18,18 @@ void ABasicPlayerController::BeginPlay()
 	FVector Location(0.0f, 0.0f, 0.0f);
 	FRotator Rotation(0.0f, 0.0f, 0.0f);
 	FActorSpawnParameters SpawnInfo;
-	m_RightWeapon = GetWorld()->SpawnActor<ABaseWeapon>(Location, Rotation, SpawnInfo);
+	m_RightWeapon = GetWorld()->SpawnActor<AMechanicWeapon>(Location, Rotation, SpawnInfo);
 	m_RightWeapon->AttachToComponent((USceneComponent*)m_CharacterOwner->GetMesh(), FAttachmentTransformRules(EAttachmentRule::SnapToTarget, EAttachmentRule::SnapToTarget, EAttachmentRule::SnapToTarget, true), "HandRSocket");
+	m_RightWeapon->SetCharacterController(this);
 
 	m_LeftWeapon = GetWorld()->SpawnActor<ABaseWeapon>(Location, Rotation, SpawnInfo);
 	m_LeftWeapon->AttachToComponent((USceneComponent*)m_CharacterOwner->GetMesh(), FAttachmentTransformRules(EAttachmentRule::SnapToTarget, EAttachmentRule::SnapToTarget, EAttachmentRule::SnapToTarget, true), "HandLSocket");
-
+	m_LeftWeapon->SetCharacterController(this);
 }
 
 void ABasicPlayerController::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	UE_LOG(LogTemp, Warning, TEXT("Controller tick"));
 	m_MovementController->UpdateMovementController(DeltaTime);
 }
 
@@ -46,6 +46,14 @@ void ABasicPlayerController::SetupInputComponent()
 
 	InputComponent->BindAction("Jump", IE_Pressed, this->m_MovementController, &UMovementController::OnJumpInputPressed);
 	InputComponent->BindAction("Jump", IE_Released, this->m_MovementController, &UMovementController::OnJumpInputReleased);
+
+	InputComponent->BindAction("Fire", IE_Pressed, this, &ABasicPlayerController::OnFirePressed);
+	InputComponent->BindAction("Fire", IE_Released, this, &ABasicPlayerController::OnFireReleased);
+}
+
+void ABasicPlayerController::PostInitProperties()
+{
+	Super::PostInitProperties();
 }
 
 ABasicCharacter * ABasicPlayerController::GetCharacterPawn()
@@ -62,3 +70,37 @@ void ABasicPlayerController::InitializeController()
 {
 	m_MovementController->SetupCharacterMovement();
 }
+
+void ABasicPlayerController::ApplyRecoil(float _strength)
+{
+	GetCharacterPawn()->AddControllerPitchInput(-_strength/100.f);
+	
+	//GetCharacterPawn()->AddControllerYawInput(_strength/200.f);
+}
+
+void ABasicPlayerController::OnFirePressed()
+{
+	UE_LOG(LogTemp, Warning, TEXT("OnFirePressed"));
+	if (m_LeftWeapon)
+	{
+		m_LeftWeapon->Fire();
+	}
+	if (m_RightWeapon)
+	{
+		m_RightWeapon->Fire();
+	}
+}
+
+void ABasicPlayerController::OnFireReleased()
+{
+	UE_LOG(LogTemp, Warning, TEXT("OnFireReleased"));
+	if (m_LeftWeapon)
+	{
+		m_LeftWeapon->StopFire();
+	}
+	if (m_RightWeapon)
+	{
+		m_RightWeapon->StopFire();
+	}
+}
+

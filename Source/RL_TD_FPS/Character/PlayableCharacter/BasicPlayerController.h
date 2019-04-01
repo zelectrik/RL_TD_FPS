@@ -32,6 +32,9 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupInputComponent() override;
 
+	/** PostInitProperties override. */
+	virtual void PostInitProperties() override;
+
 	UFUNCTION()
 		ABasicCharacter* GetCharacterPawn();
 
@@ -41,6 +44,9 @@ public:
 	UFUNCTION()
 		void InitializeController();
 
+	UFUNCTION()
+		void ApplyRecoil(float _strength);
+
 	UPROPERTY()
 		ABaseWeapon* m_RightWeapon;
 
@@ -48,6 +54,12 @@ public:
 		ABaseWeapon* m_LeftWeapon;
 	
 private:
+	UFUNCTION()
+		void OnFirePressed();
+
+	UFUNCTION()
+		void OnFireReleased();
+
 	UPROPERTY()
 		UMovementController* m_MovementController;
 

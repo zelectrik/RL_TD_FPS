@@ -12,8 +12,6 @@ class ABasicPlayerController;
 UENUM(BlueprintType)		//"BlueprintType" is essential to include
 enum class E_JumpABilities : uint8
 {
-	VE_BasicJump 	UMETA(DisplayName = "BasicJump"),
-	VE_DoubleJump 	UMETA(DisplayName = "DoubleJump"),
 	VE_Climb		UMETA(DisplayName = "Climb"),
 	VE_Plane		UMETA(DisplayName = "Plane")
 };
@@ -38,6 +36,9 @@ struct F_MovementSettings
 		int m_DoubleJumpVelocity;
 
 	UPROPERTY()
+		int m_NumberJumpCanBeDone;
+
+	UPROPERTY()
 		float m_FirstJumpZVelocity;
 
 	UPROPERTY()
@@ -54,8 +55,8 @@ struct F_MovementSettings
 		m_FirstJumpZVelocity = 500;
 		m_DoubleJumpVelocity = 500;
 		m_AirControl = 0.5;
+		m_NumberJumpCanBeDone = 1;
 		m_JumpAbilities = TArray<E_JumpABilities>();
-		m_JumpAbilities.Add(E_JumpABilities::VE_BasicJump);
 		
 	}
 };
@@ -72,6 +73,9 @@ public:
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
+
+	/** PostInitProperties override. */
+	virtual void PostInitProperties() override;
 
 public:	
 	// Called every frame
@@ -138,7 +142,10 @@ private:
 		bool b_DisableRotation;
 
 	UPROPERTY()
-		bool b_CanDoubleJump;
+		int m_CurrentJumpDone;
+
+	UPROPERTY()
+		bool b_JumpStart;
 
 
 
