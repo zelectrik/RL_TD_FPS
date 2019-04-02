@@ -45,7 +45,7 @@ public:
 		void InitializeController();
 
 	UFUNCTION()
-		void ApplyRecoil(float _strength);
+		void ApplyRecoil(float _strength, TSubclassOf<UCameraShake> _cameraShake);
 
 	UPROPERTY()
 		ABaseWeapon* m_RightWeapon;

@@ -60,6 +60,9 @@ protected:
 	UPROPERTY()
 		float m_SightDistance;
 
+	
+
+
 	FVector GetBulletDirection();
 
 public:	

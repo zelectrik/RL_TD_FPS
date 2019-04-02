@@ -31,8 +31,8 @@ struct F_WeaponSpec
 	//Constructor
 	F_WeaponSpec()
 	{
-		m_FireStrength = 1;
-		m_WeaponLoaderAmmo = 150;
+		m_FireStrength = 5;
+		m_WeaponLoaderAmmo = 1500;
 		m_FireRate = 0.01f;
 		b_AutomaticWeapon = true;
 		b_HitScan = true;
@@ -61,6 +61,9 @@ public:
 	UFUNCTION()
 		virtual E_OnReloadResult Reload() override;
 
+	UPROPERTY()
+		TSubclassOf<UCameraShake> m_RecoilShake;
+
 protected:
 
 	UPROPERTY()
@@ -68,6 +71,15 @@ protected:
 
 	UFUNCTION()
 		void Firing();
+
+	UFUNCTION()
+		void OnBulletHit(FHitResult _HitResult);
+
+	UPROPERTY()
+		UMaterialInterface* m_BulletHitDecal;
+
+	UPROPERTY()
+		UParticleSystem* m_BulletHitParticle;
 
 private:
 	float m_RemainingTimeToFire;

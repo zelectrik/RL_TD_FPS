@@ -22,7 +22,7 @@ void ABasicPlayerController::BeginPlay()
 	m_RightWeapon->AttachToComponent((USceneComponent*)m_CharacterOwner->GetMesh(), FAttachmentTransformRules(EAttachmentRule::SnapToTarget, EAttachmentRule::SnapToTarget, EAttachmentRule::SnapToTarget, true), "HandRSocket");
 	m_RightWeapon->SetCharacterController(this);
 
-	m_LeftWeapon = GetWorld()->SpawnActor<ABaseWeapon>(Location, Rotation, SpawnInfo);
+	m_LeftWeapon = GetWorld()->SpawnActor<AMechanicWeapon>(Location, Rotation, SpawnInfo);
 	m_LeftWeapon->AttachToComponent((USceneComponent*)m_CharacterOwner->GetMesh(), FAttachmentTransformRules(EAttachmentRule::SnapToTarget, EAttachmentRule::SnapToTarget, EAttachmentRule::SnapToTarget, true), "HandLSocket");
 	m_LeftWeapon->SetCharacterController(this);
 }
@@ -71,10 +71,12 @@ void ABasicPlayerController::InitializeController()
 	m_MovementController->SetupCharacterMovement();
 }
 
-void ABasicPlayerController::ApplyRecoil(float _strength)
+void ABasicPlayerController::ApplyRecoil(float _strength, TSubclassOf<UCameraShake> _cameraShake)
 {
-	GetCharacterPawn()->AddControllerPitchInput(-_strength/100.f);
-	
+	float PitchInput = -_strength / 100.f;
+	PitchInput = FMath::RandRange(PitchInput * 0.5f, PitchInput * 1.5f);
+	GetCharacterPawn()->AddControllerPitchInput(PitchInput);
+	PlayerCameraManager->PlayCameraShake(_cameraShake, .5f);
 	//GetCharacterPawn()->AddControllerYawInput(_strength/200.f);
 }
 
